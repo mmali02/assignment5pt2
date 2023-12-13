@@ -2,7 +2,7 @@ from typing import List
 
 from sklearn.model_selection import train_test_split
 
-from src.classifier.main_work.organizing import Feature, FeatureSet, NaiveBayesTextClassifier
+from src.main_work.organizing import Feature, FeatureSet, NaiveBayesTextClassifier
 from nltk.corpus import movie_reviews
 import nltk
 import os
