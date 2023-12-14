@@ -3,58 +3,58 @@ from typing import List
 from sklearn.model_selection import train_test_split
 
 from src.main_work.organizing import Feature, FeatureSet, NaiveBayesTextClassifier
-from nltk.corpus import movie_reviews
+from nltk.corpus import twitter_samples
 import nltk
 import os
 import random
 
 
-nltk.download('movie_reviews')
+nltk.download('twitter_samples')
 
 
 class TwitterRunner:
     def __init__(self):
         self.classifier = NaiveBayesTextClassifier()
-        self.data = self.load_movie_reviews_data()
+        self.data = self.load_twitter_data()
         self.output_directory = "out"  # Output directory
 
-    def load_movie_reviews_data(self, test_size=0.2) -> tuple[List[FeatureSet], List[FeatureSet]]:
+    def load_twitter_data(self, test_size=0.2) -> tuple[List[FeatureSet], List[FeatureSet]]:
         """
-                Load movie reviews data and split it into training and testing sets.
+        Load twitter_samples data and split it into training and testing sets.
 
-                Args:
-                    test_size: Proportion of the dataset to include in the test split.
+        Args:
+            test_size: Proportion of the dataset to include in the test split.
 
-                Returns:
-                    Tuple of training and testing data.
-                """
+        Returns:
+            Tuple of training and testing data.
+        """
 
-        positive_fileids = movie_reviews.fileids('pos')
-        negative_fileids = movie_reviews.fileids('neg')
-        all_fileids = positive_fileids + negative_fileids
-        min_samples = min(len(positive_fileids), len(negative_fileids))
-        random.shuffle(all_fileids)
+        positive_tweets = [(tweet, 'pos') for tweet in twitter_samples.strings('positive_tweets.json')]
+        negative_tweets = [(tweet, 'neg') for tweet in twitter_samples.strings('negative_tweets.json')]
+        all_tweets = positive_tweets + negative_tweets
+        min_samples = min(len(positive_tweets), len(negative_tweets))
+        random.shuffle(all_tweets)
 
-        reviews = [
-            FeatureSet.build(movie_reviews.raw(fileid), known_clas='pos' if fileid in positive_fileids else 'neg') for
-            fileid in all_fileids[:min_samples]]
+        tweets = [
+            FeatureSet.build(tweet, known_clas=label) for tweet, label in all_tweets[:min_samples]
+        ]
 
         # Split the data into training and testing sets
-        train_data, test_data = train_test_split(reviews, test_size=test_size, random_state=42)
+        train_data, test_data = train_test_split(tweets, test_size=test_size, random_state=42)
 
         return train_data, test_data
 
     def train_classifier(self):
         self.classifier.train(self.data[0])  # Training data
 
-    def classify_reviews(self) -> List[tuple]:
+    def classify_tweets(self) -> List[tuple]:
         results = []
         correct_predictions = 0
 
-        for review in self.data[1]:  # Testing data
-            predicted_label = self.classifier.gamma(review)
-            results.append((review.clas, predicted_label))
-            if predicted_label == review.clas:
+        for tweet in self.data[1]:  # Testing data
+            predicted_label = self.classifier.gamma(tweet)
+            results.append((tweet.clas, predicted_label))
+            if predicted_label == tweet.clas:
                 correct_predictions += 1
 
         # Calculate accuracy
@@ -65,7 +65,7 @@ class TwitterRunner:
         return [feature['feature'].name for feature in self.classifier.present_features(top_n)]
 
     def print_results_to_file(self, results: List[tuple], accuracy: float, top_features: List[str],
-                              output_file: str = "perro_runner_results.txt"):
+                              output_file: str = "twitter_runner_results.txt"):
         output_path = os.path.join(self.output_directory, output_file)
 
         # Calculate counts for true positives, true negatives, false positives, and false negatives
@@ -75,7 +75,7 @@ class TwitterRunner:
         false_negatives = sum((actual == 'pos' and predicted == 'neg') for actual, predicted in results)
 
         with open(output_path, 'w') as file:
-            file.write("PerroRunner Results:\n")
+            file.write("TwitterRunner Results:\n")
             file.write(f"Accuracy: {accuracy * 100:.2f}%\n")
             file.write("\nTop Features:\n")
             for feature in top_features:
@@ -92,12 +92,12 @@ class TwitterRunner:
             os.makedirs(self.output_directory)
 
         self.train_classifier()
-        results, accuracy = self.classify_reviews()
+        results, accuracy = self.classify_tweets()
 
         # Extract length feature for printing
         length_feature = next(iter(self.data[1][0].feat))  # Assuming the first feature is the length
         top_features = self.determine_top_features()
-        top_features.append(f"Review Length: {length_feature.value}")
+        top_features.append(f"Tweet Length: {length_feature.value}")
 
         # Extract pre-classified positive and negative word features for printing
         positive_word_features = [feature for feature in top_features if feature.startswith("positive_")]
@@ -115,11 +115,11 @@ class TwitterRunner:
         print("\nTop Features:")
         for feature in top_features:
             print(feature)
-        print("\nReview Details:")
+        print("\nTweet Details:")
         for actual, predicted in results:
             print(f"Actual: {actual}, Predicted: {predicted}")
 
 
 if __name__ == "__main__":
-    tweet_runner = TwitterRunner()
-    tweet_runner.run()
+    twitter_runner = TwitterRunner()
+    twitter_runner.run()
