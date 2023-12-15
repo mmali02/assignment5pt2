@@ -1,10 +1,10 @@
-# Assignment 5 the sequel
+## Assignment 5 the sequel
 
 
 I adapted code from a previous assignment, using a Naive Bayes classifier in order to classify movie reviews into positive and negative categories. In a similar fashion, this code is using a Naive Bayes classifier to distinguish between positive and negative tweets.
 
 
-## Citing sources: 
+# Citing sources: 
 
 “based off of this code above, how would you change this runner 
   below, now that we are using twitter_samples:” prompt. ChatGPT, 13 Dec. version 3.5, OpenAI, 14 Dec. 2023, chat.openai.com/chat.
