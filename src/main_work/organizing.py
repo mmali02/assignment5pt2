@@ -78,6 +78,8 @@ class FeatureSet:
 
         :param source_object: Text from the source object (e.g., tweet).
         :param known_clas: Pre-defined classification of the source object.
+        :param positive_words: List of additional positive words.
+        :param negative_words: List of additional negative words.
         :return: An instance of FeatureSet built based on the source object.
         """
         # Tokenize the input text to extract individual words
