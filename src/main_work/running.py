@@ -31,10 +31,9 @@ class TwitterRunner:
                 """
 
         positive_fileids = twitter_samples.fileids('pos')
-        neutral_fileids = twitter_samples.fileids('neu')
         negative_fileids = twitter_samples.fileids('neg')
-        all_fileids = positive_fileids + negative_fileids + neutral_fileids
-        min_samples = min(len(positive_fileids), len(negative_fileids), len(neutral_fileids))
+        all_fileids = positive_fileids + negative_fileids
+        min_samples = min(len(positive_fileids), len(negative_fileids))
         random.shuffle(all_fileids)
 
         reviews = [
@@ -72,12 +71,9 @@ class TwitterRunner:
 
         # Calculate counts for true positives, true negatives, false positives, and false negatives
         true_positives = sum((actual == 'pos' and predicted == 'pos') for actual, predicted in results)
-        true_neutrals = sum((actual == 'neu' and predicted == 'neu') for actual, predicted in results)
         true_negatives = sum((actual == 'neg' and predicted == 'neg') for actual, predicted in results)
         false_positives = sum((actual == 'neg' and predicted == 'pos') for actual, predicted in results)
-        false_positives2 = sum((actual == 'neu' and predicted == 'pos') for actual, predicted in results)
         false_negatives = sum((actual == 'pos' and predicted == 'neg') for actual, predicted in results)
-        false_negatives2 = sum((actual == 'neu' and predicted == 'neg') for actual, predicted in results)
 
         with open(output_path, 'w') as file:
             file.write("Twitter_Runner Results:\n")
@@ -87,12 +83,12 @@ class TwitterRunner:
                 file.write(f"{feature}\n")
             file.write("\nCounts:\n")
             file.write(f"True Positives: {true_positives}\n")
-            file.write(f"True Neutrals: {true_neutrals}\n")
+
             file.write(f"True Negatives: {true_negatives}\n")
             file.write(f"False Positives: {false_positives}\n")
-            file.write(f"False Positives 2: {false_positives2}\n")
+
             file.write(f"False Negatives: {false_negatives}\n")
-            file.write(f"False Negatives 2: {false_negatives2}\n")
+
 
     def run(self):
         # Create the output directory if it doesn't exist
@@ -109,11 +105,11 @@ class TwitterRunner:
 
         # Extract pre-classified positive and negative word features for printing
         positive_word_features = [feature for feature in top_features if feature.startswith("positive_")]
-        neutral_word_features = [feature for feature in top_features if feature.startswith("neutral_")]
+
         negative_word_features = [feature for feature in top_features if feature.startswith("negative_")]
 
         print(f"\nPre-classified Positive Words: {positive_word_features}")
-        print(f"Pre-classified Neutral Words: {neutral_word_features}")
+
         print(f"Pre-classified Negative Words: {negative_word_features}")
 
         self.print_results_to_file(results, accuracy, top_features)

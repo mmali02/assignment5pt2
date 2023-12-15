@@ -86,19 +86,14 @@ class FeatureSet:
         # Original features based on word occurrences
         original_features = {Feature(word): True for word in words}
 
-        # Additional features for pre-classified positive, neutral and negative words
+        # Additional features for pre-classified positive and negative words
         positive_words = {'awesome', 'love', 'amazing', 'happy', 'great', 'fun', 'exciting', 'cool', 'fantastic', 'excellent' }
-
-        neutral_words = {'meh', 'okay', 'alright', 'acceptable', 'uninterested', 'uh', 'even', 'different', 'something' }
 
         negative_words = {'sad', 'hate', 'terrible', 'bad', 'horrible', 'not', 'why', 'unpleasant', 'worst', 'poor', 'shit'}
 
         # Add features based on the presence of positive and negative words in the text
         for word_feature in positive_words:
             original_features[Feature(f"positive_{word_feature}")] = word_feature in words
-
-        for word_feature in neutral_words:
-            original_features[Feature(f"neutral_{word_feature}")] = word_feature in words
 
         for word_feature in negative_words:
             original_features[Feature(f"negative_{word_feature}")] = word_feature in words
@@ -203,7 +198,7 @@ class NaiveBayesTextClassifier(AbstractClassifier):
                 feature_name = feature.name
 
                 # Handle pre-classified positive and negative word features separately
-                if feature_name.startswith("positive_") or feature_name.startswith("neutral_") or feature_name.startswith("negative_"):
+                if feature_name.startswith("positive_") or feature_name.startswith("negative_"):
                     if feature_name not in feature_counts:
                         feature_counts[feature_name] = {}
                     if data_point.clas not in feature_counts[feature_name]:
