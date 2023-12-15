@@ -29,7 +29,6 @@ class TwitterRunner:
                 Returns:
                     Tuple of training and testing data.
                 """
-
         positive_fileids = twitter_samples.fileids('pos')
         negative_fileids = twitter_samples.fileids('neg')
         all_fileids = positive_fileids + negative_fileids
