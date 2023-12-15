@@ -21,7 +21,7 @@ class TwitterRunner:
 
     def load_tweet_data(self, test_size=0.2) -> tuple[List[FeatureSet], List[FeatureSet]]:
         """
-                Load movie reviews data and split it into training and testing sets.
+                Load tweet data and split it into training and testing sets.
 
                 Args:
                     test_size: Proportion of the dataset to include in the test split.
@@ -83,10 +83,8 @@ class TwitterRunner:
                 file.write(f"{feature}\n")
             file.write("\nCounts:\n")
             file.write(f"True Positives: {true_positives}\n")
-
             file.write(f"True Negatives: {true_negatives}\n")
             file.write(f"False Positives: {false_positives}\n")
-
             file.write(f"False Negatives: {false_negatives}\n")
 
 
@@ -105,11 +103,9 @@ class TwitterRunner:
 
         # Extract pre-classified positive and negative word features for printing
         positive_word_features = [feature for feature in top_features if feature.startswith("positive_")]
-
         negative_word_features = [feature for feature in top_features if feature.startswith("negative_")]
 
         print(f"\nPre-classified Positive Words: {positive_word_features}")
-
         print(f"Pre-classified Negative Words: {negative_word_features}")
 
         self.print_results_to_file(results, accuracy, top_features)
