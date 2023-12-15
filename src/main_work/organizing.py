@@ -86,14 +86,19 @@ class FeatureSet:
         # Original features based on word occurrences
         original_features = {Feature(word): True for word in words}
 
-        # Additional features for pre-classified positive and negative words
-        # Customize these lists based on Twitter sentiment characteristics
-        positive_words = {'awesome', 'love', 'amazing', 'happy', 'great', 'fun', 'exciting', 'cool', 'fantastic'}
-        negative_words = {'sad', 'hate', 'terrible', 'bad', 'horrible', 'not', 'why', 'meh', 'unpleasant', 'worst'}
+        # Additional features for pre-classified positive, neutral and negative words
+        positive_words = {'awesome', 'love', 'amazing', 'happy', 'great', 'fun', 'exciting', 'cool', 'fantastic', 'excellent' }
+
+        neutral_words = {'meh', 'okay', 'alright', 'acceptable', 'uninterested', 'uh', 'even', 'different', 'something' }
+
+        negative_words = {'sad', 'hate', 'terrible', 'bad', 'horrible', 'not', 'why', 'unpleasant', 'worst', 'poor', 'shit'}
 
         # Add features based on the presence of positive and negative words in the text
         for word_feature in positive_words:
             original_features[Feature(f"positive_{word_feature}")] = word_feature in words
+
+        for word_feature in neutral_words:
+            original_features[Feature(f"neutral_{word_feature}")] = word_feature in words
 
         for word_feature in negative_words:
             original_features[Feature(f"negative_{word_feature}")] = word_feature in words
@@ -114,26 +119,23 @@ class NaiveBayesTextClassifier(AbstractClassifier):
 
     def gamma(self, a_feature_set: FeatureSet) -> str:
         """
-        Calculate the posterior probability for each class based on the given feature set.
+            Calculate the posterior probability for each class based on the given feature set.
 
-        :param a_feature_set: An instance of FeatureSet containing relevant features for classification.
-        :return: The predicted class based on the highest posterior probability.
-        """
+            :param a_feature_set: An instance of FeatureSet containing relevant features for classification.
+            :return: The predicted class based on the highest posterior probability.
+            """
         # Initialize a dictionary to store posterior probabilities for each class
         posterior_probs = {}
-
         # Calculate posterior probabilities for each class
         for clas, prior in self.class_priors.items():
             # Initialize likelihood with a default value of 0.5
             likelihood = 0.5
-
             # Iterate through each feature in the feature set
             for feature in a_feature_set.feat:
                 # Check if the feature has likelihood information for the current class
                 if feature.name in self.feature_likelihoods and clas in self.feature_likelihoods[feature.name]:
                     # Update likelihood based on the feature's likelihood for the current class
                     likelihood *= self.feature_likelihoods[feature.name][clas]
-
             # Calculate the overall posterior probability for the current class
             posterior_probs[clas] = prior * likelihood
 
@@ -144,11 +146,11 @@ class NaiveBayesTextClassifier(AbstractClassifier):
 
     def present_features(self, top_n: int = 1) -> List[Dict[str, Any]]:
         """
-        Present the top N informative features and their probabilities based on the trained classifier.
+            Present the top N informative features and their probabilities based on the trained classifier.
 
-        :param top_n: The number of top informative features to display. Default is 1.
-        :return: A list of dictionaries containing feature information, class, and probability.
-        """
+            :param top_n: The number of top informative features to display. Default is 1.
+            :return: A list of dictionaries containing feature information, class, and probability.
+            """
         # Check if the classifier has been trained
         if not self.feature_likelihoods:
             print("Classifier has not been trained yet. Call the train method first.")
@@ -175,20 +177,18 @@ class NaiveBayesTextClassifier(AbstractClassifier):
 
     def train(self, training_set: Iterable[FeatureSet]) -> 'NaiveBayesTextClassifier':
         """
-        Train the Naive Bayes text classifier using the provided training set.
+           Train the Naive Bayes text classifier using the provided training set.
 
-        :param training_set: An iterable containing instances of FeatureSet for training the classifier.
-        :return: The trained NaiveBayesTextClassifier instance.
-        """
+           :param training_set: An iterable containing instances of FeatureSet for training the classifier.
+           :return: The trained NaiveBayesTextClassifier instance.
+           """
         # Calculate class priors
         total_samples = 0
         class_counts = {}
-
         # Count occurrences of each class in the training set
         for data_point in training_set:
             total_samples += 1
             class_counts[data_point.clas] = class_counts.get(data_point.clas, 0) + 1
-
         # Calculate and store class priors
         for clas, count in class_counts.items():
             self.class_priors[clas] = count / total_samples
@@ -196,41 +196,27 @@ class NaiveBayesTextClassifier(AbstractClassifier):
         # Calculate feature likelihoods
         feature_counts = {}
         class_totals = {}
-
         # Iterate through the training set to count features for each class
         for data_point in training_set:
             class_totals[data_point.clas] = class_totals.get(data_point.clas, 0) + 1
-
             for feature in data_point.feat:
                 feature_name = feature.name
 
-                # Include category feature
-                if feature_name == 'category':
-                    feature_value = feature.value
-                    if feature_value not in feature_counts:
-                        feature_counts[feature_value] = {}
-                    if data_point.clas not in feature_counts[feature_value]:
-                        feature_counts[feature_value][data_point.clas] = 0
-                    feature_counts[feature_value][data_point.clas] += 1
+                # Handle pre-classified positive and negative word features separately
+                if feature_name.startswith("positive_") or feature_name.startswith("neutral_") or feature_name.startswith("negative_"):
+                    if feature_name not in feature_counts:
+                        feature_counts[feature_name] = {}
+                    if data_point.clas not in feature_counts[feature_name]:
+                        feature_counts[feature_name][data_point.clas] = 0
+                    feature_counts[feature_name][data_point.clas] += feature.value
 
                 # Handle other features
                 else:
-                    # Handle pre-classified positive and negative word features separately
-                    if feature_name.startswith("positive_") or feature_name.startswith("negative_"):
-                        if feature_name not in feature_counts:
-                            feature_counts[feature_name] = {}
-                        if data_point.clas not in feature_counts[feature_name]:
-                            feature_counts[feature_name][data_point.clas] = 0
-                        feature_counts[feature_name][data_point.clas] += feature.value
-
-                    # Handle other features
-                    else:
-                        if feature_name not in feature_counts:
-                            feature_counts[feature_name] = {}
-                        if data_point.clas not in feature_counts[feature_name]:
-                            feature_counts[feature_name][data_point.clas] = 0
-                        feature_counts[feature_name][data_point.clas] += 1
-
+                    if feature_name not in feature_counts:
+                        feature_counts[feature_name] = {}
+                    if data_point.clas not in feature_counts[feature_name]:
+                        feature_counts[feature_name][data_point.clas] = 0
+                    feature_counts[feature_name][data_point.clas] += 1
         # Calculate and store feature likelihoods using Laplace smoothing
         for feature_name, class_counts in feature_counts.items():
             if feature_name not in self.feature_likelihoods:
@@ -238,6 +224,5 @@ class NaiveBayesTextClassifier(AbstractClassifier):
             for clas, count in class_counts.items():
                 # Use Laplace smoothing
                 self.feature_likelihoods[feature_name][clas] = (count + 1) / (class_totals[clas] + len(feature_counts))
-
         # Return the trained classifier instance
         return self
