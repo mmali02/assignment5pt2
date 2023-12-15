@@ -23,7 +23,7 @@ I adapted code from a previous assignment, using a Naive Bayes classifier in ord
 
 ## Guide of Code:
 
-# Feature class
+### Feature class
 Feature used for the classification of an object.
 
     Attributes:
@@ -31,14 +31,14 @@ Feature used for the classification of an object.
         _value (any): Machine-readable value of the feature (e.g., True)
     """
 
-# Feature Set class: 
+### Feature Set class: 
 A set of features that represent a single object. Optionally includes the known class of the object.
 
     Attributes:
         _feat (set[Feature]): A set of features that define this object for the purposes of a classifier
         _clas (str | None): Optional attribute set as the pre-defined classification of this object
 
-  # Build function:
+### Build function:
         Build and return an instance of FeatureSet given a source object (e.g., tweet from twitter_samples).
 
         Tokenize the text and create features based on word occurrences and pre-classified positive/negative words.
@@ -49,28 +49,28 @@ A set of features that represent a single object. Optionally includes the known 
         
 # Naive Bayes Classifier
 
-#   Gamma function: 
+###   Gamma function: 
             Calculate the posterior probability for each class based on the given feature set.
 
             :param a_feature_set: An instance of FeatureSet containing relevant features for classification.
             :return: The predicted class based on the highest posterior probability.
 
-#   Present features function:
+###   Present features function:
             Present the top N informative features and their probabilities based on the trained classifier.
 
             :param top_n: The number of top informative features to display. Default is 1.
             :return: A list of dictionaries containing feature information, class, and probability.
 
             
-#   Train function: 
+###   Train function: 
            Train the Naive Bayes text classifier using the provided training set.
 
            :param training_set: An iterable containing instances of FeatureSet for training the classifier.
            :return: The trained NaiveBayesTextClassifier instance.
 
-# Runner: 
+### Runner: 
 
-# Load tweet data: 
+### Load tweet data: 
 
                 Load tweet data and split it into training and testing sets.
 
